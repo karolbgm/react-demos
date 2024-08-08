@@ -28,3 +28,5 @@ npm start #by default runs on port 5000
 ```sh
 npm start #by default runs 3000
 ```
+
+![alt text](image.png)
