@@ -1,0 +1,4 @@
+# GET google.com
+#?(...) ----->  QUERY PARAM
+GET http://localhost:9000/teams?division=Southeast
+

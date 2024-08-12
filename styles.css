@@ -1,5 +1,15 @@
+.list {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+/* .card {
+  border: 1px solid lightgray;
+  width: 18rem;
+  padding: 2rem;
+} */
+
 .card {
-    border: 1px solid lightgray;
-    padding: 2rem;
-    width: 18rem;
-  }
+  width: 18rem;
+}
