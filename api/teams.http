@@ -1,0 +1,27 @@
+### GET ALL
+GET http://localhost:9000/teams
+
+### GET ONE
+ GET http://localhost:9000/teams/4
+
+
+
+### POST (Insert)
+POST http://localhost:9000/teams/
+Content-Type: application/json
+
+{
+    "name": "Cincinnati Royals",
+    "division": "Midwest"
+}
+
+
+### PUT (Update)
+//REMEMBER TO CHANGE THE ID!!!
+PUT http://localhost:9000/teams/4 
+Content-Type: application/json
+
+{
+    "name": "Cincinnati Royals UPDATED",
+    "division": "Midwest"
+}

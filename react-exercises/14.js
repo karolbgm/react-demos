@@ -1,3 +1,5 @@
+//IMPORTS
+
 const {
   //renaming BrowserRouter to Router
   BrowserRouter: Router,
@@ -7,10 +9,13 @@ const {
   Link,
   NavNavLink,
   Navigate,
+  useNavigate,
   useParams,
   useLocation,
   useNavigation,
 } = window.ReactRouterDOM;
+
+const { useForm } = ReactHookForm;
 
 const { useState, useEffect } = React;
 
@@ -58,9 +63,37 @@ function delay(ms) {
 const url = `${BASE_URL}/teams`;
 //fetch - then check the status to see if it's okay(if not we catch the error), then parse json
 const teamAPI = {
+  //fetch - ALWAYS A GET unless you change it
+  //we always checkStatus
+  //we parseJSON if we get data back
   list() {
     return fetch(url).then(checkStatus).then(parseJSON);
   },
+  find(id) {
+    return fetch(`${url}/${id}`).then(checkStatus).then(parseJSON);
+  },
+  add(team) {
+    return fetch(url, {
+      method: "POST",
+      body: JSON.stringify(team), //we need to turn the team data into JSON
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then(checkStatus)
+      .then(parseJSON);
+  },
+  update(team) {
+    fetch(`${url}/${team.id}`, {
+      method: "PUT",
+      body: JSON.stringify(team),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }).then(checkStatus);
+  },
+  //they all need checkStatus
+  //update - parseJson it needs only here
 };
 
 //COMPONENTS UI
@@ -96,9 +129,7 @@ function TeamList() {
               <strong>{team.name}</strong>
               <div>{team.division}</div>
             </div>
-            <Link className="btn btn-primary" to="edit">
-              Edit Team
-            </Link>
+            <Link to={`/teams/edit/${team.id}`}>Edit</Link>
           </div>
         ))}
       </div>
@@ -117,7 +148,7 @@ function TeamsPage() {
     <>
       <div>
         <header className="d-flex justify-content-between mb-4">
-          <h2>Songs</h2>
+          <h2>Teams</h2>
           <Link className="btn btn-primary" to="/teams/create">
             Add Team
           </Link>
@@ -144,6 +175,112 @@ function NotFound() {
     </>
   );
 }
+function TeamForm() {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    defaultValues: loadTeam,
+  });
+
+  const [busy, setBusy] = useState(false);
+  const { id } = useParams();
+  const numberId = Number(id);
+  const [team, setTeam] = useState({});
+  const [error, setError] = useState(undefined);
+
+  async function loadTeam() {
+    if (!numberId) {
+      return Promise.resolve({});
+    } else {
+      try {
+        return await teamAPI.find(numberId);
+      } catch (error) {
+        setError(error.message);
+      }
+    }
+  }
+
+
+  const divisions = [
+    { id: 1, name: "Southeast" },
+    { id: 2, name: "Atlantic" },
+    { id: 3, name: "Central" },
+    { id: 4, name: "Southwest" },
+    { id: 5, name: "Northwest" },
+    { id: 6, name: "Pacific" },
+  ];
+
+  const navigate = useNavigate();
+  async function saveTeam(team) {
+    try {
+      setBusy(true);
+      if (!team.id) {
+        let newTeam = await teamAPI.add(team);
+      } else {
+        await teamAPI.update(team);
+      }
+      //Navigate here
+      navigate("/teams");
+    } catch (error) {
+      seterrorMessage(error.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  // function saveTeam(team){
+  //     console.log(team);
+  // }
+
+  return (
+    <>
+      {busy && <p>Saving...</p>}
+      {error && <div className="alert alert-danger">{error.message}</div>}
+      <form onSubmit={handleSubmit(saveTeam)}>
+        <div className="mb-3">
+          <label className="form-label" htmlFor="name">
+            Team Name
+          </label>
+          <input
+            className={`form-control ${errors.name ? "is-invalid" : ""}`}
+            type="text"
+            id="name"
+            {...register("name", { required: "Name is required" })}
+          />
+          {errors.name && <div className="invalid-feedback">{errors.name.message}</div>}
+          <label className="form-label" htmlFor="division">
+            Team Division
+          </label>
+          <select
+            id="division"
+            className={`form-select ${errors.division ? "is-invalid" : ""}`}
+            {...register("division", { required: "Division is required" })}
+          >
+            <option value="">Select Division</option>
+            {divisions.map((division) => {
+              return (
+                <option key={division.id} value={division.name}>
+                  {division.name}
+                </option>
+              );
+            })}
+          </select>
+          {errors.division && <div className="invalid-feedback">{errors.division.message}</div>}
+        </div>
+        <div className="d-flex gap-2">
+          <button className="btn btn-primary" type="submit">
+            Save
+          </button>
+          <Link className="btn btn-outline-secondary" to="/teams">
+            Cancel
+          </Link>
+        </div>
+      </form>
+    </>
+  );
+}
 function CreateTeamPage() {
   return (
     <>
@@ -151,16 +288,21 @@ function CreateTeamPage() {
         <h2>Create Team</h2>
       </header>
       <hr />
+      <TeamForm />
     </>
   );
 }
 function EditTeamPage() {
+  const { id } = useParams();
+  const teamId = Number(id);
   return (
     <>
       <header className="d-flex justify-content-between mb-4">
         <h2>Edit Team</h2>
       </header>
       <hr />
+      {/* {typeof id} */}
+      <TeamForm />
     </>
   );
 }
@@ -196,7 +338,7 @@ function App() {
               <Route path="teams" element={<TeamsPage />} />
               <Route path="players" element={<PlayersPage />} />
               <Route path="teams/create" element={<CreateTeamPage />} />
-              <Route path="teams/edit" element={<EditTeamPage />} />
+              <Route path="teams/edit/:id" element={<EditTeamPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </div>
