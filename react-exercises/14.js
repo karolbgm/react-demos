@@ -185,10 +185,21 @@ function TeamForm() {
   });
 
   const [busy, setBusy] = useState(false);
+  //useParams returns a params object with all the params
+  // let id = params.id
   const { id } = useParams();
   const numberId = Number(id);
   const [team, setTeam] = useState({});
   const [error, setError] = useState(undefined);
+
+  const divisions = [
+    { id: 1, name: "Southeast" },
+    { id: 2, name: "Atlantic" },
+    { id: 3, name: "Central" },
+    { id: 4, name: "Southwest" },
+    { id: 5, name: "Northwest" },
+    { id: 6, name: "Pacific" },
+  ];
 
   async function loadTeam() {
     if (!numberId) {
@@ -201,16 +212,6 @@ function TeamForm() {
       }
     }
   }
-
-
-  const divisions = [
-    { id: 1, name: "Southeast" },
-    { id: 2, name: "Atlantic" },
-    { id: 3, name: "Central" },
-    { id: 4, name: "Southwest" },
-    { id: 5, name: "Northwest" },
-    { id: 6, name: "Pacific" },
-  ];
 
   const navigate = useNavigate();
   async function saveTeam(team) {
